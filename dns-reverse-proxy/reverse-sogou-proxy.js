@@ -254,7 +254,6 @@
 
     ReverseSogouProxy.prototype._on_proxy_error = function _on_proxy_error(err, req, res){
         var self = this;
-        log.error(req.headers);
         log.error("_on_proxy_error:", err, req.headers["host"], req.url, req.socket.remoteAddress);
         if ("ECONNRESET" === err.code) {
             self.reset_count += 1;
