@@ -22,6 +22,7 @@
     sogou = require("../shared/sogou");
     dns_proxy = require("./dns-proxy");
     lutils = require("./lutils");
+    var util = require('util');
     log = lutils.logger;
     HTTP_RATE_LIMIT = 10;
     MAX_ERROR_COUNT = {
@@ -40,7 +41,11 @@
         self.sogou_renew_timeout = 10 * 60 * 1e3;
         self.public_ip_box = null;
         self.request_id = 1;
-        self.sogou_port = 80;
+        //self.sogou_port = 80;
+        /*
+         * use squid proxy port on VPN server instead
+         */
+        self.sogou_port = 3128;
         self.proxy_host = "0.0.0.0";
         self.proxy_port = 80;
         if (options["listen_port"]) {
@@ -185,11 +190,16 @@
         host_parts = raw_host.split(":");
         host = host_parts[0];
         port = parseInt(host_parts[1] || 80);
+        /*
+           local server, no need to check if request URL redirect to other unsupported URLs.
+         */
+        /*
         domain_map = lutils.fetch_user_domain();
         if (!domain_map[host]) {
             self._handle_unknown_host(req, res);
             return;
         }
+        */
         proxy = self.proxy;
         if (req.url.indexOf("http") !== 0) {
             if (port == 80) {
@@ -202,7 +212,7 @@
             url = req.url;
         }
         to_use_proxy = lutils.is_valid_url(url);
-        log.debug("do_proxy[%s] req.url:", self.request_id, url, to_use_proxy);
+        log.debug(util.format("do_proxy[%s] req.url:", self.request_id, url, to_use_proxy));
         req.headers["X-Droxy-SG"] = "" + to_use_proxy;
         req.headers["X-Droxy-RID"] = "" + self.request_id;
         self.request_id += 1;
@@ -228,7 +238,7 @@
         }
         headers = lutils.filtered_request_headers(req.headers, forward_cookies);
         req.headers = headers;
-        log.debug("do_proxy[%s] headers:", headers["X-Droxy-Rid"], headers, req.socket.remoteAddress);
+        log.debug(util.format("do_proxy[%s] headers:", headers["X-Droxy-Rid"], headers, req.socket.remoteAddress));
         proxy.web(req, res, proxy_options);
     };
 
@@ -244,6 +254,7 @@
 
     ReverseSogouProxy.prototype._on_proxy_error = function _on_proxy_error(err, req, res){
         var self = this;
+        log.error(req.headers);
         log.error("_on_proxy_error:", err, req.headers["host"], req.url, req.socket.remoteAddress);
         if ("ECONNRESET" === err.code) {
             self.reset_count += 1;
@@ -275,12 +286,12 @@
         }
         if (mitm === true) {
             s = res.socket;
-            log.warn("We are fucked by man-in-the-middle[%d]:\n", req_id, res.headers, res.statusCode, s.remoteAddress + ":" + s.remotePort);
+            log.warn(util.format("We are fucked by man-in-the-middle[%d]:\n", req_id, res.headers, res.statusCode, s.remoteAddress + ":" + s.remotePort));
             res.statusCode = 502;
             self.refuse_count += 1;
             self.renew_sogou_server();
         } else {
-            log.debug("_on_proxy_response[%d] headers:", req_id, res.headers, res.statusCode);
+            log.debug(util.format("_on_proxy_response[%d] headers:", req_id, res.headers, res.statusCode));
         }
     };
 
@@ -290,6 +301,10 @@
         "In case we see an request with unknown/un-routed \"host\" ";
         sock = req.socket;
         raddress = sock.remoteAddress;
+        /*
+         * local server, won't handel unknown host error
+         */
+        /*
         sock.destroy();
         local_hosts = [ self.options["listen_address"], self.options["external_ip"] ];
         if (self.public_ip_box !== null) {
@@ -300,6 +315,8 @@
         } else {
             self.banned[raddress] = true;
         }
+        */
+        log.warn('Reverse Proxy: try to ban IP '+raddress);
         log.warn("HTTP Proxy DoS attack:", req.headers, req.url, raddress);
     };
 
@@ -307,7 +324,7 @@
         var self = this;
         var addr;
         addr = self.server.address();
-        log.info("Sogou proxy listens on %s:%d", addr.address, addr.port);
+        log.info(util.format("Sogou proxy listens on %s:%d", addr.address, addr.port));
         self.emit("listening");
     };
 

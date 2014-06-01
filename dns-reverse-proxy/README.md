@@ -79,7 +79,7 @@ by running the server. See the Disclaimer above.
 Install dependencies by
 ```
     cd dns-reverse-proxy/
-    npm install rapydscript http-proxy optimist
+    npm install rapydscript@0.1.99 http-proxy optimist colors util
 ```
 
 Compile rapydscripts to javascripts

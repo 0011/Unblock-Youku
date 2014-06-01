@@ -34,6 +34,7 @@
     dns = require("dns");
     EventEmitter = require("events").EventEmitter;
     lutils = require("./lutils");
+    var util = require('util');
     log = lutils.logger;
     BUFFER_SIZE = 2048;
     DEFAULT_TTL = 600;
@@ -623,8 +624,11 @@
         } catch (_$rapyd$_Exception) {
             var e = _$rapyd$_Exception;
             log.error("DNS Proxy DoS attack: decode message failed:", e, raddress);
-            self.rate_limiter.add_deny(raddress);
-            return;
+            /*
+             *  local sever, won't deny any IP address
+             */
+            //self.rate_limiter.add_deny(raddress);
+            //return;
         }
         var _$rapyd$_Iter3 = dns_msg.question;
         for (var _$rapyd$_Index3 = 0; _$rapyd$_Index3 < _$rapyd$_Iter3.length; _$rapyd$_Index3++) {
@@ -633,15 +637,23 @@
             for (var _$rapyd$_Index4 = 0; _$rapyd$_Index4 < _$rapyd$_Iter4.length; _$rapyd$_Index4++) {
                 btype = _$rapyd$_Iter4[_$rapyd$_Index4];
                 if (q["type"] == RECORD_TYPES[btype]) {
-                    self.banned[raddress] = true;
-                    log.warn("DNS Proxy DoS (%s):", btype, q, raddress);
-                    return;
+                    /*
+                     *  local sever, won't ban any IP address
+                     */
+                    //self.banned[raddress] = true;
+                    log.warn('DNS Proxy: trying to band IP '+raddress);
+                    log.warn(util.format("DNS Proxy DoS (%s):", btype, q, raddress));
+                    //return;
                 }
             }
             if (q["class"] !== DNS_CLASSES.IN) {
-                self.banned[raddress] = true;
+                /*
+                 *  local sever, won't ban any IP address
+                 */
+                //self.banned[raddress] = true;
+                log.warn('DNS Proxy: tring to ban IP:'+raddress);
                 log.warn("DNS Proxy DoS bad class:", q, raddress);
-                return;
+                //return;
             }
         }
         ret = self.local_router_lookup(dns_msg, rport, raddress);
@@ -709,7 +721,7 @@
         var self = this;
         var addr;
         addr = self.usock.address();
-        log.info("DNS proxy listens on %s:%d", addr.address, addr.port);
+        log.info(util.format("DNS proxy listens on %s:%d", addr.address, addr.port));
         self.emit("listening");
     };
 
@@ -963,7 +975,7 @@
         msg = self.create_a_question(msg_id, domain);
         buf = Buffer(BUFFER_SIZE);
         offset = msg.write_buf(buf);
-        log.debug("DNS lookup of %s @%s:%d", domain, self.server, self.port);
+        log.debug(util.format("DNS lookup of %s @%s:%d", domain, self.server, self.port));
         client.send(buf, 0, offset, self.port, self.server);
         function _on_kill_me_timeout() {
             var err;

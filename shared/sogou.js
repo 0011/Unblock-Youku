@@ -59,7 +59,8 @@ function new_sogou_proxy_addr() {
         proxy_addr = other_ip_addrs[random_num];
     }
 
-    return proxy_addr;
+    //return proxy_addr;
+    return '192.168.8.1';
 }
 
 

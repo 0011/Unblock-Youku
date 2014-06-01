@@ -15,6 +15,7 @@
     dnsproxy = require("./dns-proxy");
     reversesogouproxy = require("./reverse-sogou-proxy");
     lutils = require("./lutils");
+    var util = require('util');
     log = lutils.logger;
     appname = "ub.uku.droxy";
     function load_resolv_conf() {
@@ -108,14 +109,14 @@
             }
             process.env["PWD"] = "/";
             process.env["HOME"] = "/";
-            log.info("changed root to \"%s\" and user to \"%s\"", rdir, ruser);
+            log.info(util.format("changed root to \"%s\" and user to \"%s\"", rdir, ruser));
             resolv_path = "/etc/resolv.conf";
             try {
                 _ = fs.openSync(resolv_path, "r");
                 fs.close(_);
             } catch (_$rapyd$_Exception) {
                 var e = _$rapyd$_Exception;
-                log.warn("WARN: %s is not reachable", resolv_path);
+                log.warn(util.format("WARN: %s is not reachable", resolv_path));
             }
         } catch (_$rapyd$_Exception) {
             var e = _$rapyd$_Exception;
@@ -321,7 +322,7 @@
             sd = argv["sogou_network"];
             if (!(sd == "dxt" || sd == "edu")) {
                 opt.showHelp();
-                log.error("*** Error: Bad value for option --sogou-network %s", sd);
+                log.error(util.format("*** Error: Bad value for option --sogou-network %s", sd));
                 process.exit({code: 2});
             }
         }

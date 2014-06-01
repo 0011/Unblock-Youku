@@ -21,6 +21,21 @@
     net = require("net");
     url = require("url");
     dns = require("dns");
+
+    var util = require('util');
+    var colors = require('colors');
+    colors.setTheme({
+        silly: 'rainbow',
+        input: 'grey',
+        verbose: 'cyan',
+        prompt: 'grey',
+        info: 'green',
+        data: 'grey',
+        help: 'cyan',
+        warn: 'yellow',
+        debug: 'blue',
+        error: 'red'
+    });
     EventEmitter = require("events").EventEmitter;
     shared_urls = require("../shared/urls");
     shared_tools = require("../shared/tools");
@@ -28,6 +43,23 @@
     string_starts_with = shared_tools.string_starts_with;
     to_title_case = shared_tools.to_title_case;
     SOGOU_IPS = [ "121.195.", "123.126.", "220.181." ];
+    function getDateTime() {
+        var date = new Date();
+
+        var hour = date.getHours();
+        hour = (hour < 10 ? "0" : "") + hour;
+        var min  = date.getMinutes();
+        min = (min < 10 ? "0" : "") + min;
+        var sec  = date.getSeconds();
+        sec = (sec < 10 ? "0" : "") + sec;
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        month = (month < 10 ? "0" : "") + month;
+        var day  = date.getDate();
+        day = (day < 10 ? "0" : "") + day;
+
+        return "[" + month + "/" + day  + "/"+ year + " " + hour + ":" + min + ":" + sec + "]";
+    }
     function Logger(level){
         var self = this;
         if (typeof level === "undefined") level = null;
@@ -52,28 +84,35 @@
     Logger.prototype._log = function _log(){
         var self = this;
         var level = arguments[0];
-        var args = [].slice.call(arguments, 1);
+        var color = arguments[1];
+        var datetime_str = getDateTime()[color];
+        var args = [].slice.call(arguments, 2);
         if (level >= self.level) {
-            console.log.apply(console, [].concat(args));
+            var available_methods = ['log', 'info', 'error', 'warn'];
+            if(available_methods.indexOf(color)>=0){
+                console[color].apply(console, [datetime_str].concat(args));
+            }else{
+                console.log.apply(console, [datetime_str].concat(args));
+            }
         }
     };
 
     Logger.prototype.msg = function msg(){
         var self = this;
         var args = [].slice.call(arguments, 0);
-        self._log.apply(self, [self.NOTSET].concat(args));
+        self._log.apply(self, [self.NOTSET, 'input'].concat(args));
     };
 
     Logger.prototype.debug = function debug(){
         var self = this;
         var args = [].slice.call(arguments, 0);
-        self._log.apply(self, [self.DEBUG].concat(args));
+        self._log.apply(self, [self.DEBUG, 'debug'].concat(args));
     };
 
     Logger.prototype.info = function info(){
         var self = this;
         var args = [].slice.call(arguments, 0);
-        self._log.apply(self, [self.INFO].concat(args));
+        self._log.apply(self, [self.INFO, 'info'].concat(args));
     };
 
     Logger.prototype.log = function log(){
@@ -85,19 +124,19 @@
     Logger.prototype.warn = function warn(){
         var self = this;
         var args = [].slice.call(arguments, 0);
-        self._log.apply(self, [self.WARN].concat(args));
+        self._log.apply(self, [self.WARN, 'warn'].concat(args));
     };
 
     Logger.prototype.error = function error(){
         var self = this;
         var args = [].slice.call(arguments, 0);
-        self._log.apply(self, [self.ERROR].concat(args));
+        self._log.apply(self, [self.ERROR, 'error'].concat(args));
     };
 
     Logger.prototype.critical = function critical(){
         var self = this;
         var args = [].slice.call(arguments, 0);
-        self._log.apply(self, [self.CRITICAL].concat(args));
+        self._log.apply(self, [self.CRITICAL, 'error'].concat(args));
     };
 
     logger = new Logger();
@@ -255,7 +294,7 @@
                 }
             }
             if (!valid) {
-                logger.warn("WARN: sogou IP (%s -> %s) seems invalid", domain, addr);
+                logger.warn(util.format("WARN: sogou IP (%s -> %s) seems invalid", domain, addr));
             }
         }
         if (!addr_info["ip"]) {
@@ -270,7 +309,11 @@
         if (typeof depth === "undefined") depth = 0;
         var new_addr, new_ip, headers, options, req;
         "check validity of proxy.\n        emit \"renew-address\" on success\n        ";
-        if (depth >= 10) {
+        /*
+        * We use VPN instead of sogou proxy server,
+        * no need to renew address, so change depth from 10 to 0
+        */
+        if (depth >= 0) {
             self.emit("renew-address", addr_info);
             return;
         }
@@ -292,7 +335,7 @@
             if (400 == res.statusCode) {
                 self._on_check_sogou_success(addr_info);
             } else {
-                logger.error("[ub.uku.js] statusCode for %s is unexpected: %d", new_addr, res.statusCode);
+                logger.error(util.format("[ub.uku.js] statusCode for %s is unexpected: %d", new_addr, res.statusCode));
                 self.renew_sogou_server(depth + 1);
             }
         }
@@ -300,13 +343,13 @@
         function on_socket(socket) {
             function on_socket_timeout() {
                 req.abort();
-                logger.error("[ub.uku.js] Timeout for %s. Aborted.", new_addr);
+                logger.error(util.format("[ub.uku.js] Timeout for %s. Aborted.", new_addr));
             }
             socket.setTimeout(SOCKET_TIMEOUT, on_socket_timeout);
         }
         req.on("socket", on_socket);
         function on_error(err) {
-            logger.error("[ub.uku.js] Error when testing %s: %s", new_addr, err);
+            logger.error(util.format("[ub.uku.js] Error when testing %s: %s", new_addr, err));
             self.renew_sogou_server(depth + 1);
         }
         req.on("error", on_error);
