@@ -1,0 +1,14 @@
+{
+    "#comment-1": "keys start with # are comments",
+    "#comment-2": "This config file is for raspberry pi",
+    "ip": "192.168.1.20",
+    "dns-host": "192.168.1.1",
+    "sogou-dns": "192.168.1.1",
+    "#sogou-network": "dxt",
+    "dns-rate-limit": "-1",
+    "http-rate-limit": "-1",
+    "chroot-dir": "/home/pi/Unblock-Youku/dns-reverse-proxy/chroot",
+    "run-as": "pi",
+    "#dns-no-relay": "1",
+    "extra-url-list": "/home/pi/Unblock-Youku/dns-reverse-proxy/extra-url-list.json"
+}
