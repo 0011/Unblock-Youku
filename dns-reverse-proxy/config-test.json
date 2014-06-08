@@ -1,0 +1,14 @@
+{
+    "#comment-1": "keys start with # are comments",
+    "#comment-2": "This config file is for local test",
+    "ip": "192.168.1.13",
+    "dns-host": "192.168.1.1",
+    "sogou-dns": "192.168.1.1",
+    "#sogou-network": "dxt",
+    "dns-rate-limit": "-1",
+    "http-rate-limit": "-1",
+    "chroot-dir": "/Users/xye/work/0011/Unblock-Youku/dns-reverse-proxy/chroot",
+    "run-as": "xye",
+    "#dns-no-relay": "1",
+    "extra-url-list": "extra-url-list.json"
+}
