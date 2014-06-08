@@ -623,7 +623,6 @@
         } catch (_$rapyd$_Exception) {
             var e = _$rapyd$_Exception;
             log.error("DNS Proxy DoS attack: decode message failed:", e, raddress);
-            self.rate_limiter.add_deny(raddress);
             return;
         }
         var _$rapyd$_Iter3 = dns_msg.question;
@@ -633,13 +632,11 @@
             for (var _$rapyd$_Index4 = 0; _$rapyd$_Index4 < _$rapyd$_Iter4.length; _$rapyd$_Index4++) {
                 btype = _$rapyd$_Iter4[_$rapyd$_Index4];
                 if (q["type"] == RECORD_TYPES[btype]) {
-                    self.banned[raddress] = true;
                     log.warn("DNS Proxy DoS (%s):", btype, q, raddress);
                     return;
                 }
             }
             if (q["class"] !== DNS_CLASSES.IN) {
-                self.banned[raddress] = true;
                 log.warn("DNS Proxy DoS bad class:", q, raddress);
                 return;
             }

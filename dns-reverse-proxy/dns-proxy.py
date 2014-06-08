@@ -557,18 +557,18 @@ class DnsProxy(EventEmitter):
         except as e:
             log.error("DNS Proxy DoS attack: decode message failed:", e,
                     raddress)
-            self.rate_limiter.add_deny(raddress)
+            #self.rate_limiter.add_deny(raddress)
             return
 
         # Drop all the DNS.ANY questions. It's just stupid
         for q in dns_msg.question:
             for btype in self.banned_record_types:
                 if q["type"] == RECORD_TYPES[btype]:
-                    self.banned[raddress] = True
+            #        self.banned[raddress] = True
                     log.warn("DNS Proxy DoS (%s):", btype, q, raddress)
                     return
             if q["class"] is not DNS_CLASSES.IN:
-                self.banned[raddress] = True
+            #    self.banned[raddress] = True
                 log.warn("DNS Proxy DoS bad class:", q, raddress)
                 return
 

@@ -176,9 +176,23 @@
         var self = this;
         var raw_host, host_parts, host, port, domain_map, proxy, url, to_use_proxy, forward_cookies, si, sogou_host, sogou_port, proxy_options, headers;
         "The handler of node proxy server";
+        parse_url = require('url').parse;
+        url_path = parse_url(req.url)['path'];
+        if (url_path === '/crossdomain.xml') {
+            console.log(req.url);
+            res.writeHead(200, {
+                'Content-Type': 'text/xml',
+                'Content-Length': '113',
+                'Cache-Control': 'public, max-age=2592000'
+            });
+            res.end('<?xml version="1.0" encoding="UTF-8"?>\n' +
+                '<cross-domain-policy><allow-access-from domain="*"/></cross-domain-policy>');
+            return;
+        }
         raw_host = req.headers["host"] || req.headers["Host"];
         if (!raw_host) {
-            self._handle_unknown_host(req, res);
+            req.socket.destroy();
+            log.warn("HTTP Proxy DoS attack:(unknown host)", req.url, req.socket.remoteAddress);
             return;
         }
         host_parts = raw_host.split(":");
@@ -186,8 +200,7 @@
         port = parseInt(host_parts[1] || 80);
         domain_map = lutils.fetch_user_domain();
         if (!domain_map[host]) {
-            self._handle_unknown_host(req, res);
-            return;
+            log.warn("HTTP Proxy DoS attack:(host doesn't in domain list)", req.url, req.socket.remoteAddress);
         }
         proxy = self.proxy;
         if (req.url.indexOf("http") !== 0) {

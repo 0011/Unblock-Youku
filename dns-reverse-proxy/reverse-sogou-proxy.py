@@ -148,7 +148,9 @@ class ReverseSogouProxy(EventEmitter):
         raw_host = req.headers["host"] or req.headers["Host"]
 
         if not raw_host: # as a reverse proxy, cannot handle missing host
-            self._handle_unknown_host(req, res)
+            req.socket.destroy();
+            log.warn("HTTP Proxy DoS attack:(unknown host)", req.url, req.socket.remoteAddress)
+        #    self._handle_unknown_host(req, res)
             return
 
         # some host come with port
@@ -158,8 +160,9 @@ class ReverseSogouProxy(EventEmitter):
 
         domain_map = lutils.fetch_user_domain()
         if not domain_map[host]:
-            self._handle_unknown_host(req, res)
-            return
+            log.warn("HTTP Proxy DoS attack:(host doesn't in domain list)", req.url, req.socket.remoteAddress)
+        #    self._handle_unknown_host(req, res)
+        #    return
 
         proxy = self.proxy
 
