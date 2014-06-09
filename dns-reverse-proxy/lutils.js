@@ -54,6 +54,37 @@
         var level = arguments[0];
         var args = [].slice.call(arguments, 1);
         if (level >= self.level) {
+
+    var str = "[";
+
+    var currentTime = new Date();
+    var years = currentTime.getFullYear();
+    var months = currentTime.getMonth()+1;
+    var dates = currentTime.getDate();
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    var seconds = currentTime.getSeconds();
+
+    if (months <10) {
+        months = "0" + months;
+    }
+    if (dates <10) {
+        dates = "0" + dates;
+    }
+    if (minutes < 10) {
+        minutes = "0" + minutes;
+    }
+    if (seconds < 10) {
+        seconds = "0" + seconds;
+    }
+    str += months + "/" + dates + "/" + years +" " +hours%12 + ":" + minutes + ":" + seconds;
+    if(hours > 11){
+        str += " PM]";
+    } else {
+        str += " AM]";
+    }            
+
+    process.stdout.write(str+" ");
             console.log.apply(console, [].concat(args));
         }
     };

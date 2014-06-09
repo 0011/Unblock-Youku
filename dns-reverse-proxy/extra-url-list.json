@@ -1,7 +1,5 @@
 [
-    "http://api.tv.sohu.com/*",
     "http://iface2.iqiyi.com/php/xyz/entry/*",
-    "http://iface2.iqiyi.com/st/nav/*",
     "http://rcgi.video.qq.com/stts_qqlivehd_start*",
     "http://dynamic.app.m.letv.com/android/*",
     "http://v.youku.com/v_show/*",
