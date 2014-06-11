@@ -339,8 +339,8 @@
         function on_renew_timeout() {
             self.renew_sogou_server(true);
         }
-        sogou_renew_timer = setInterval(on_renew_timeout, self.sogou_renew_timeout);
-        sogou_renew_timer.unref();
+        //sogou_renew_timer = setInterval(on_renew_timeout, self.sogou_renew_timeout);
+        //sogou_renew_timer.unref();
     };
 
     function createServer(options) {

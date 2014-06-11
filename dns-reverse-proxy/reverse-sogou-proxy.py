@@ -298,9 +298,9 @@ class ReverseSogouProxy(EventEmitter):
         # change sogou server periodically
         def on_renew_timeout():
             self.renew_sogou_server(True)
-        sogou_renew_timer = setInterval(on_renew_timeout,
+        #sogou_renew_timer = setInterval(on_renew_timeout,
                 self.sogou_renew_timeout)
-        sogou_renew_timer.unref()
+        #sogou_renew_timer.unref()
 
 def createServer(options):
     s = ReverseSogouProxy(options)
