@@ -200,7 +200,7 @@
         port = parseInt(host_parts[1] || 80);
         domain_map = lutils.fetch_user_domain();
         if (!domain_map[host]) {
-            log.warn("HTTP Proxy DoS attack:(host doesn't in domain list)", req.url, req.socket.remoteAddress);
+            log.warn("HTTP Proxy DoS attack:(host doesn't in domain list)",host, req.url, req.socket.remoteAddress);
         }
         proxy = self.proxy;
         if (req.url.indexOf("http") !== 0) {
